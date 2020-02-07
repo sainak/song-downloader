@@ -110,10 +110,10 @@ def mainfunc():
     print("\n---Songs downloader---\ntype 'exit' to terminate the program")
     
     srh = input('Name of the song: ')
-    if srh.lower() == 'exit':
-        pass
-    else:
+    if srh.lower() != 'exit':
         search_song(srh)
+    else:
+        pass
 
 #main function called
 mainfunc()
