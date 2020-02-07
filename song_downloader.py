@@ -1,5 +1,6 @@
 #credits: erazer
 
+from tqdm import tqdm
 import requests
 import time
 import json
@@ -73,18 +74,28 @@ def get_song(_search_json):
             a = ' '
             while a != 'y' or a != 'n':
                 
-                a = input('Do you want to to download this song [{}] [y/n]? '.format(str(round((int(song_json['song']['size'])/1048576),2))+' MB'))
+                a = input('Do you want to to download this song [{}] [y/n]? '.format(str(round((int(song_json['song']['size'])/1000000),2))+' MB'))
                 
                 if a.lower() == 'y':
                     
                     #download the song
-                    print('DOWNLOADING...')
+                    print('\nDOWNLOADING...\n')
                     file_name = song_json['song']['artist']+" - "+song_json['song']['title']+".mp3"
+                    
+                    response = requests.get(song_json['song']['url'],stream=True)
+                    
+                    #progress bar stuff
+                    total_size = int(response.headers.get('content-length', 0))
+                    block_size = 1024 #1 Kibibyte
+                    t=tqdm(total=total_size, unit='iB', unit_scale=True)
+
                     with open(file_name,'wb') as file:
-                        response = requests.get(song_json['song']['url'])
-                        file.write(response.content)
-                        print('DOWNLOAD SUCESSFUL\n')
-                        break
+                        for data in response.iter_content(block_size):
+                            t.update(len(data)) #update the progress bar
+                            file.write(data)
+                    t.close()
+                    print('DOWNLOAD SUCESSFUL\n')
+                    break
 
                 elif a.lower() == 'n':
                     break
@@ -96,7 +107,7 @@ def get_song(_search_json):
 
 #main function
 def mainfunc():
-    print("\n Songs downloader from MUSICPLEER\ntype 'exit' to terminate the program")
+    print("\n---Songs downloader---\ntype 'exit' to terminate the program")
     
     srh = input('Name of the song: ')
     if srh.lower() == 'exit':
