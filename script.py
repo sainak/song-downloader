@@ -89,7 +89,6 @@ def get_song(_search_json):
             continue
         
         else:
-            print(song_json)
             print('\n---RESULT---')
             print('title: {}'.format(song_json['song']['title']))
             print('artist: {}'.format(song_json['song']['artist']))
