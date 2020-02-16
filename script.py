@@ -1,12 +1,14 @@
 #created by aakash714
 #download songs from databrainz database
-#v3.1
+#v4.0.1
 
 import json
 import time
 
 import requests
 from tqdm import tqdm
+from playsound import playsound
+
 
 
 get_headers = {
@@ -87,6 +89,7 @@ def get_song(_search_json):
             continue
         
         else:
+            print(song_json)
             print('\n---RESULT---')
             print('title: {}'.format(song_json['song']['title']))
             print('artist: {}'.format(song_json['song']['artist']))
@@ -106,9 +109,12 @@ def download_song(_song_json):
     except requests.exceptions.ConnectionError:
         print('\tconnection ERROR\n ')
         exit(1)
-    
-    file_name = _song_json['song']['artist']+" - "+_song_json['song']['title']+".mp3"
-    
+        
+    if _song_json['song']['artist'] != '':
+        file_name = _song_json['song']['artist']+" - "+_song_json['song']['title']+".mp3"
+    else:
+        file_name = _song_json['song']['title']+".mp3"
+        
     total_size = int(file_resp.headers.get('content-length', 0))
     t = tqdm(total=total_size, unit='iB', unit_scale=True)
     
@@ -139,15 +145,16 @@ def mainfunc():
         
         song_json = get_song(search_json)
             
-    a = ' '
-    while a != 'q' or a != 'e':
+    a = None
+    while a != 'q' or a != 'r':
         
         print('\nEnter')
         print("    'q' to DOWNLOAD the song")
-        print("    'w' to search NEXT RESULT")
-        print("    'e' to CANCEL")
+        print("    'w' to STREAM this song(under development)")
+        print("    'e' for NEXT RESULT")
+        print("    'r' to CANCEL")
         
-        a = input('  >>>').lower()
+        a = input('   > ').lower()
         print('')
         
         if a == 'q':
@@ -155,11 +162,17 @@ def mainfunc():
             break
         
         elif a == 'w':
+            print('\nSTREAMING...(please kill me to stop the stream)\n')
+            playsound(song_json['song']['url'])
+            continue
+            
+        
+        elif a == 'e':
             i += 1
             song_json = get_song(search_json)
             continue
             
-        elif a == 'e':
+        elif a == 'r':
             break
         
         else:
