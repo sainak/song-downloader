@@ -1,3 +1,2 @@
-requests
-tqdm
-playsound
+requests>=2.21.0
+tqdm>=4.43.0
