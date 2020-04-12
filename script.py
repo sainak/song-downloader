@@ -1,14 +1,14 @@
 #created by aakash714
 #download songs from databrainz database
-#v4.0.1
+#v4.1
 
 import json
+import multiprocessing
 import time
 
 import requests
-from tqdm import tqdm
 from playsound import playsound
-
+from tqdm import tqdm
 
 
 get_headers = {
@@ -17,7 +17,6 @@ get_headers = {
     'Referer': 'http://musicpleer.cloud/'
 }
 
-i = 0
 search_response_items = 50 #number of response items
 
 #search for the song in teh database
@@ -55,12 +54,11 @@ def search_song(_srh):
         print('SONGS FOUND')
         
         return search_json
-  
-    
+
+
 #get the song data from database 
-def get_song(_search_json):
-    
-    global i
+def get_song(_search_json, i):
+
     song_url = 'https://databrainz.com/api/data_api_new.cgi'
     
     while i <= search_response_items:
@@ -131,7 +129,6 @@ def download_song(_song_json):
 #main function
 def mainfunc():
     
-    global i
     i = 0
     
     print("\n===|Songs downloader - by EraZeR|===\ntype 'exit' to terminate the program")
@@ -141,8 +138,7 @@ def mainfunc():
         exit(0)
     else:
         search_json = search_song(srh)
-        
-        song_json = get_song(search_json)
+        song_json = get_song(search_json, i)
             
     a = None
     while a != 'q' or a != 'r':
@@ -161,14 +157,17 @@ def mainfunc():
             break
         
         elif a == 'w':
-            print('\nSTREAMING...(please kill me to stop the stream)\n')
-            playsound(song_json['song']['url'])
+            print('\nSTREAMING...\n')
+            p = multiprocessing.Process(target=playsound,args=(song_json['song']['url'],))
+            p.start()
+            input('press ENTER to stop playback')
+            p.terminate()
             continue
             
         
         elif a == 'e':
             i += 1
-            song_json = get_song(search_json)
+            song_json = get_song(search_json, i)
             continue
             
         elif a == 'r':
