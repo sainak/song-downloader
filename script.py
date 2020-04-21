@@ -6,14 +6,9 @@ import json
 import multiprocessing
 import time
 
-try:
-    import requests
-    from playsound import playsound
-    from tqdm import tqdm
-
-except ModuleNotFoundError:
-    print("please install the required modules from requirements.txt")
-    exit(1)
+import requests
+from tqdm import tqdm
+import vlc
 
 
 search_response_items = 50  # number of response items
@@ -147,7 +142,7 @@ def main():
 
         print("\nEnter")
         print("    'q' to DOWNLOAD the song")
-        print("    'w' to STREAM this song(under development)")
+        print("    'w' to STREAM this song[uisng VLC(under development)]")
         print("    'e' for NEXT RESULT")
         print("    'r' to CANCEL")
         a = input("   > ").lower()
@@ -159,12 +154,10 @@ def main():
 
         elif a == "w":
             print("\nSTREAMING...")
-            p = multiprocessing.Process(
-                target=playsound, args=(song_json["song"]["url"],)
-            )
-            p.start()
+            p = vlc.MediaPlayer(song_json["song"]["url"])
+            p.play()
             input("press ENTER to stop playback")
-            p.terminate()
+            p.stop()
             continue
 
         elif a == "e":
