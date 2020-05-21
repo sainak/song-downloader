@@ -1,6 +1,7 @@
 # song-downloader
 
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/aakas68/song-downloader/?ref=repository-badge)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 python script to download songs
 
