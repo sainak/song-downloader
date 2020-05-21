@@ -1,6 +1,6 @@
 # song-downloader
 
-[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/aakas68/song-downloader/?ref=repository-badge)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/aakash37/song-downloader/?ref=repository-badge)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 python script to download songs
@@ -26,9 +26,9 @@ Windows
 linux & mac
 
 ```
-python3 script.py
+$ python3 script.py
 
 or
 
-$ chmod +x && ./script.py
+$ chmod +x script.py && ./script.py
 ```
