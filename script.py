@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 # created by aakash37
 # download songs from databrainz database
-# v4.1.1
+# v4.2
 
 import json
 import multiprocessing
@@ -11,7 +13,7 @@ try:
     from playsound import playsound
 
 except ModuleNotFoundError:
-    print("please install the required modules from requirements.txt")
+    print("ERROR please install the required modules from requirements.txt")
     exit(1)
 
 
@@ -25,7 +27,24 @@ get_headers = {
 }
 
 
+def progress(percent=0, width=35):
+    """print progress bar"""
+    left = width * percent // 100
+    right = width - left
+    print(
+        "\r[",
+        "#" * left,
+        f"{percent:>3}%",
+        " " * right,
+        "]",
+        sep="",
+        end="",
+        flush=True,
+    )
+
+
 def search_song(_srh):
+    """Search song and get songs json response from api"""
     print("SEARCHING...")
     search_url = "https://databrainz.com/api/search_api.cgi"
 
@@ -60,23 +79,8 @@ def search_song(_srh):
     return search_json
 
 
-def progress(percent=0, width=35):
-    left = width * percent // 100
-    right = width - left
-    print(
-        "\r[",
-        "#" * left,
-        f"{percent:>3}%",
-        " " * right,
-        "]",
-        sep="",
-        end="",
-        flush=True,
-    )
-
-
-# get the song data from database
 def get_song(_search_json, i):
+    """get the song data from database api"""
     song_url = "https://databrainz.com/api/data_api_new.cgi"
 
     while i <= search_response_items:
@@ -103,18 +107,18 @@ def get_song(_search_json, i):
             i += 1
             continue
 
-        else:
-            print("\n---RESULT---")
-            print(f"title: {song_json['song']['title']}")
-            print(f"artist: {song_json['song']['artist']}")
-            print(f"album: {song_json['song']['album']}")
-            print(f"release date: {song_json['song']['date']}")
-            print(f"size: {round((int(song_json['song']['size']) / 1000000), 2)} MB")
-            return song_json
+        print("\n---RESULT---")
+        print(f"title: {song_json['song']['title']}")
+        print(f"artist: {song_json['song']['artist']}")
+        print(f"album: {song_json['song']['album']}")
+        print(f"release date: {song_json['song']['date']}")
+        print(f"size: {round((int(song_json['song']['size']) / 1000000), 2)} MB")
+        return song_json
 
 
 # download the song
 def download_song(_song_json):
+    """Download the song with a progress bar"""
     print("\nDOWNLOADING...\n")
     try:
         file_resp = requests.get(_song_json["song"]["url"], stream=True)
@@ -137,7 +141,7 @@ def download_song(_song_json):
         length = 0
         for data in file_resp.iter_content(1024):
             length += len(data)
-            progress(int(length / total_size * 100))
+            progress(int(length / total_size * 100))  # progress bar
             file.write(data)
 
     print("\nDOWNLOAD SUCESSFUL\n")
@@ -146,9 +150,10 @@ def download_song(_song_json):
 
 
 def main():
+    """main function"""
     i = 0
 
-    print("\n===|Songs downloader|===\ntype 'exit' to terminate the " "program")
+    print("\n===|Songs downloader|===\ntype 'exit' to terminate the program")
 
     srh = input("Name of the song: ")
     if srh.lower() == "exit":
@@ -162,7 +167,7 @@ def main():
 
         print("\nEnter")
         print("    'q' to DOWNLOAD the song")
-        print("    'w' to STREAM this song(under development)")
+        print("    'w' to STREAM this song(beta)")
         print("    'e' for NEXT RESULT")
         print("    'r' to CANCEL")
         a = input("   > ").lower()
@@ -170,7 +175,6 @@ def main():
 
         if a == "q":
             download_song(song_json)
-            break
 
         elif a == "w":
             print("\nSTREAMING...")
@@ -180,18 +184,10 @@ def main():
             p.start()
             input("press ENTER to stop playback")
             p.terminate()
-            continue
 
         elif a == "e":
             i += 1
             song_json = get_song(search_json, i)
-            continue
-
-        elif a == "r":
-            break
-
-        else:
-            continue
 
 
 if __name__ == "__main__":
