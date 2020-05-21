@@ -1,13 +1,19 @@
+#!/usr/bin/env python3
+
 # created by aakash37
 # download songs from databrainz database
-# v4.1.1
+# v4.2
 
 import json
 import time
 
-import requests
-from tqdm import tqdm
-import vlc
+try:
+    import requests
+    import vlc
+
+except ModuleNotFoundError:
+    print("ERROR please install the required modules from requirements.txt")
+    exit(1)
 
 
 search_response_items = 50  # number of response items
@@ -20,7 +26,24 @@ get_headers = {
 }
 
 
+def progress(percent=0, width=35):
+    """print progress bar"""
+    left = width * percent // 100
+    right = width - left
+    print(
+        "\r[",
+        "#" * left,
+        f"{percent:>3}%",
+        " " * right,
+        "]",
+        sep="",
+        end="",
+        flush=True,
+    )
+
+
 def search_song(_srh):
+    """Search song and get songs json response from api"""
     print("SEARCHING...")
     search_url = "https://databrainz.com/api/search_api.cgi"
 
@@ -55,8 +78,8 @@ def search_song(_srh):
     return search_json
 
 
-# get the song data from database
 def get_song(_search_json, i):
+    """get the song data from database api"""
     song_url = "https://databrainz.com/api/data_api_new.cgi"
 
     while i <= search_response_items:
@@ -83,18 +106,18 @@ def get_song(_search_json, i):
             i += 1
             continue
 
-        else:
-            print("\n---RESULT---")
-            print(f"title: {song_json['song']['title']}")
-            print(f"artist: {song_json['song']['artist']}")
-            print(f"album: {song_json['song']['album']}")
-            print(f"release date: {song_json['song']['date']}")
-            print(f"size: {round((int(song_json['song']['size']) / 1000000), 2)} MB")
-            return song_json
+        print("\n---RESULT---")
+        print(f"title: {song_json['song']['title']}")
+        print(f"artist: {song_json['song']['artist']}")
+        print(f"album: {song_json['song']['album']}")
+        print(f"release date: {song_json['song']['date']}")
+        print(f"size: {round((int(song_json['song']['size']) / 1000000), 2)} MB")
+        return song_json
 
 
 # download the song
 def download_song(_song_json):
+    """Download the song with a progress bar"""
     print("\nDOWNLOADING...\n")
     try:
         file_resp = requests.get(_song_json["song"]["url"], stream=True)
@@ -111,23 +134,25 @@ def download_song(_song_json):
         file_name = _song_json["song"]["title"] + ".mp3"
 
     total_size = int(file_resp.headers.get("content-length", 0))
-    t = tqdm(total=total_size, unit="iB", unit_scale=True)
+    print(total_size)
 
     with open(file_name, "wb") as file:
+        length = 0
         for data in file_resp.iter_content(1024):
-            t.update(len(data))  # update the progress bar
+            length += len(data)
+            progress(int(length / total_size * 100))  # progress bar
             file.write(data)
 
-    t.close()
-    print("DOWNLOAD SUCESSFUL\n")
+    print("\nDOWNLOAD SUCESSFUL\n")
 
     main()
 
 
 def main():
+    """main function"""
     i = 0
 
-    print("\n===|Songs downloader|===\ntype 'exit' to terminate the " "program")
+    print("\n===|Songs downloader|===\ntype 'exit' to terminate the program")
 
     srh = input("Name of the song: ")
     if srh.lower() == "exit":
@@ -141,7 +166,7 @@ def main():
 
         print("\nEnter")
         print("    'q' to DOWNLOAD the song")
-        print("    'w' to STREAM this song[uisng VLC(under development)]")
+        print("    'w' to STREAM this song[uisng VLC(beta)]")
         print("    'e' for NEXT RESULT")
         print("    'r' to CANCEL")
         a = input("   > ").lower()
@@ -149,7 +174,6 @@ def main():
 
         if a == "q":
             download_song(song_json)
-            break
 
         elif a == "w":
             print("\nSTREAMING...")
@@ -162,15 +186,6 @@ def main():
         elif a == "e":
             i += 1
             song_json = get_song(search_json, i)
-            continue
-
-        elif a == "r":
-            break
-
-        else:
-            continue
-
-    main()
 
 
 if __name__ == "__main__":
