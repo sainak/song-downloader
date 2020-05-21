@@ -9,7 +9,6 @@ import time
 try:
     import requests
     from playsound import playsound
-    from tqdm import tqdm
 
 except ModuleNotFoundError:
     print("please install the required modules from requirements.txt")
@@ -59,6 +58,21 @@ def search_song(_srh):
         search_json = json.loads(search_resp.text[43:-1])
         print("SONGS FOUND")
     return search_json
+
+
+def progress(percent=0, width=35):
+    left = width * percent // 100
+    right = width - left
+    print(
+        "\r[",
+        "#" * left,
+        f"{percent:>3}%",
+        " " * right,
+        "]",
+        sep="",
+        end="",
+        flush=True,
+    )
 
 
 # get the song data from database
@@ -117,15 +131,16 @@ def download_song(_song_json):
         file_name = _song_json["song"]["title"] + ".mp3"
 
     total_size = int(file_resp.headers.get("content-length", 0))
-    t = tqdm(total=total_size, unit="iB", unit_scale=True)
+    print(total_size)
 
     with open(file_name, "wb") as file:
+        length = 0
         for data in file_resp.iter_content(1024):
-            t.update(len(data))  # update the progress bar
+            length += len(data)
+            progress(int(length / total_size * 100))
             file.write(data)
 
-    t.close()
-    print("DOWNLOAD SUCESSFUL\n")
+    print("\nDOWNLOAD SUCESSFUL\n")
 
     main()
 
@@ -177,8 +192,6 @@ def main():
 
         else:
             continue
-
-    main()
 
 
 if __name__ == "__main__":
